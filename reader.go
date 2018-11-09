@@ -83,7 +83,8 @@ func (r *Reader) ReadNextPacket() (PacketHeader, []byte, error) {
 	if pcaprecHdr.CaptureLen < 1 {
 		fmt.Println("invalid pcaprecHdr.CaptureLen:", pcaprecHdr.CaptureLen)
 		spew.Dump(pcaprecHdr)
-		panic("panic")
+		spew.Dump(buff)
+		panic("invalid capture length")
 	} else {
 		buf = make([]byte, pcaprecHdr.CaptureLen)
 		if _, err := io.ReadFull(r.Buffer, buf[:]); err != nil {
