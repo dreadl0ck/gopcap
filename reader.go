@@ -16,8 +16,11 @@ package gopcap
 import (
 	"bufio"
 	"encoding/binary"
+	"fmt"
 	"io"
 	"os"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
 /////////////////////////////
@@ -76,9 +79,16 @@ func (r *Reader) ReadNextPacket() (PacketHeader, []byte, error) {
 		OriginalLen: int32(binary.LittleEndian.Uint32(buff[12:16])),
 	}
 
-	var buf = make([]byte, pcaprecHdr.CaptureLen)
-	if _, err := io.ReadFull(r.Buffer, buf[:]); err != nil {
-		return pcaprecHdr, buf, err
+	var buf []byte
+	if pcaprecHdr.CaptureLen < 1 {
+		fmt.Println("invalid pcaprecHdr.CaptureLen:", pcaprecHdr.CaptureLen)
+		spew.Dump(pcaprecHdr)
+		panic("panic")
+	} else {
+		buf = make([]byte, pcaprecHdr.CaptureLen)
+		if _, err := io.ReadFull(r.Buffer, buf[:]); err != nil {
+			return pcaprecHdr, buf, err
+		}
 	}
 
 	return pcaprecHdr, buf, nil
