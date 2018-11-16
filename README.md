@@ -59,8 +59,8 @@ Data structures for the PCAP file header and packet headers are provided:
 
 ## Usage
 
-Reading a PCAP file from disk can be done by calling **gopcap.Open** and looping on **r.ReadNextPacket()**.
-Additionally there is a function called **gopcap.Count** that returns the total count of packets in the file (useful for displaying progress).
+Reading a PCAP file from disk can be done by calling **gopcap.Open(path)** and looping on **r.ReadNextPacket()** of the returned reader.
+Additionally there is a function called **gopcap.Count(path)** that returns the total count of packets in the file (useful for displaying progress).
 
 ```go
     // get total packet count
@@ -90,24 +90,24 @@ Additionally there is a function called **gopcap.Count** that returns the total 
 ## Benchmarks
 
 There are a few pure go implementations for parsing PCAP files available.
-These have not been evaluated in the benchmark, for the given reason(s):
+The following have not been evaluated in the benchmark, for the given reason(s):
 
 - https://github.com/davecheney/pcap, Latest commit 10760a1  on Aug 19, 2012, fails to compile with various errors
 - https://github.com/Lukasa/gopcap, limited in functionality, API only allows to parse a file completely, which is unpractical for big files.
 
-The following are included in the benchmarks, in the order they are listed:
+These implementation are included in the benchmarks, in the order they are listed:
 
 - https://github.com/dreadl0ck/gopcap (this package)
 - https://github.com/github.com/0intro/pcap
 - https://github.com/google/gopacket/pcap
-- https://github.com/go.universe.tf/netboot/pcap
+- https://godoc.org/go.universe.tf/netboot
 - https://github.com/github.com/miekg/pcap
 
 The benchmark code fetches a single packet in a loop, and discards all data that is not needed.
 Make sure the PCAP file for the test has enough packets to be read in one call, otherwise the tests wont produce meaningful results.
 
 I didn't include the dump in the repo because it is around 1.0G in size.
-The used PCAP file (maccdc2012_00000.pcap) is from the National CyberWatch Mid-Atlantic Collegiate Cyber Defense Competition (MACCDC),
+The used PCAP file (**maccdc2012_00000.pcap**) is from the National CyberWatch Mid-Atlantic Collegiate Cyber Defense Competition (MACCDC),
 which can be downloaded here: https://www.netresec.com/?page=MACCDC
 
     $ go test -run=XXX -bench=.
@@ -124,3 +124,4 @@ which can be downloaded here: https://www.netresec.com/?page=MACCDC
 
 This implementation achieves 297 ns/op which is the fastest of all compared.
 The gopacket pcap library and fork from miekg both use C bindings.
+For the benchmark of the gopacket pcap implementation, the **ZeroCopyReadPacketData()** function was used.
