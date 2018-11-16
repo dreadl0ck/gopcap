@@ -2,10 +2,10 @@
 
 This package provides support for reading Packet Capture (PCAP) files efficiently in pure Go.
 
-The problem:
+**The problem:**
 
-Existing implementations use **binary.Read()** for parsing the binary data into the expected structure.
-**binary.Read** makes use of reflection, which hurts performance.
+Existing implementations use **binary.Read** for parsing the binary data into the expected structure.
+However, the function makes use of reflection, which hurts performance.
 
 This implementation does not use **binary.Read** to parse the file and packet headers,
 and therefore is much faster.
@@ -14,47 +14,47 @@ It will be extended with support for writing PCAP in the near future.
 
 The following API is exported by the package:
 
-```go
-    func Count(path string) int64
-    type FileHeader
-    type PacketHeader
-    type Reader
-        func Open(filename string) (*Reader, error)
-        func (r *Reader) Close() error
-        func (r *Reader) ReadNextPacket() (PacketHeader, []byte, error)
-        func (r *Reader) ReadNextPacketHeader() (PacketHeader, []byte, error)
+```golang
+func Count(path string) int64
+type FileHeader
+type PacketHeader
+type Reader
+    func Open(filename string) (*Reader, error)
+    func (r *Reader) Close() error
+    func (r *Reader) ReadNextPacket() (PacketHeader, []byte, error)
+    func (r *Reader) ReadNextPacketHeader() (PacketHeader, []byte, error)
 ```
 
 Data structures for the PCAP file header and packet headers are provided:
 
-```go
-    type FileHeader struct {
-        // magic number
-        MagicNumber uint32
-        // major version number
-        VersionMajor uint16
-        // minor version number
-        VersionMinor uint16
-        // GMT to local correction
-        Thiszone int32
-        // accuracy of timestamps
-        Sigfigs uint32
-        // max length of captured packets, in octets
-        Snaplen uint32
-        // data link type
-        Network uint32
-    }
+```golang
+type FileHeader struct {
+    // magic number
+    MagicNumber uint32
+    // major version number
+    VersionMajor uint16
+    // minor version number
+    VersionMinor uint16
+    // GMT to local correction
+    Thiszone int32
+    // accuracy of timestamps
+    Sigfigs uint32
+    // max length of captured packets, in octets
+    Snaplen uint32
+    // data link type
+    Network uint32
+}
 
-    type PacketHeader struct {
-        // timestamp seconds
-        TsSec int32
-        // timestamp microseconds
-        TsUsec int32
-        // number of octets of packet saved in file
-        CaptureLen int32
-        // actual length of packet
-        OriginalLen int32
-    }
+type PacketHeader struct {
+    // timestamp seconds
+    TsSec int32
+    // timestamp microseconds
+    TsUsec int32
+    // number of octets of packet saved in file
+    CaptureLen int32
+    // actual length of packet
+    OriginalLen int32
+}
 ```
 
 ## Usage
@@ -62,29 +62,29 @@ Data structures for the PCAP file header and packet headers are provided:
 Reading a PCAP file from disk can be done by calling **gopcap.Open(path)** and looping on **r.ReadNextPacket()** of the returned reader.
 Additionally there is a function called **gopcap.Count(path)** that returns the total count of packets in the file (useful for displaying progress).
 
-```go
-    // get total packet count
-    fmt.Println("total:", gopcap.Count(path))
+```golang
+// get total packet count
+fmt.Println("total:", gopcap.Count(path))
 
-    // create reader
-    r, err := gopcap.Open(path)
+// create reader
+r, err := gopcap.Open(path)
+if err != nil {
+    panic(err)
+}
+defer r.Close()
+
+// loop over packets
+for {
+    h, data, err := r.ReadNextPacket()
     if err != nil {
+        if err == io.EOF {
+            println("EOF")
+            break
+        }
         panic(err)
     }
-    defer r.Close()
-
-    // loop over packets
-    for {
-        h, data, err := r.ReadNextPacket()
-        if err != nil {
-            if err == io.EOF {
-                println("EOF")
-                break
-            }
-            panic(err)
-        }
-        fmt.Println(h, len(data))
-    }
+    fmt.Println(h, len(data))
+}
 ```
 
 ## Benchmarks
