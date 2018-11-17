@@ -5,7 +5,7 @@
 [![Golang](https://img.shields.io/badge/Go-1.10-blue.svg)](https://golang.org)
 ![Linux](https://img.shields.io/badge/Supports-Linux-green.svg)
 ![macOS](https://img.shields.io/badge/Supports-macOS-green.svg)
-![Windows](https://img.shields.io/badge/Supports-Windosa-green.svg)
+![Windows](https://img.shields.io/badge/Supports-Windows-green.svg)
 
 This package provides support for reading Packet Capture (PCAP) files efficiently in pure Go
 and provides benchmarks against other packages offering the same functionality.
