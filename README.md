@@ -5,6 +5,7 @@
 [![Golang](https://img.shields.io/badge/Go-1.10-blue.svg)](https://golang.org)
 ![Linux](https://img.shields.io/badge/Supports-Linux-green.svg)
 ![macOS](https://img.shields.io/badge/Supports-macOS-green.svg)
+![Windows](https://img.shields.io/badge/Supports-Windosa-green.svg)
 
 This package provides support for reading Packet Capture (PCAP) files efficiently in pure Go
 and provides benchmarks against other packages offering the same functionality.
@@ -115,7 +116,7 @@ These implementation are included in the benchmarks, in the order they are liste
 - https://github.com/google/gopacket/pcapgo
 
 The benchmark code fetches a single packet in a loop, and discards all data that is not needed.
-Make sure the PCAP file for the test has enough packets to be read in one call, otherwise the tests wont produce meaningful results.
+Make sure the PCAP file for the test is big enough, otherwise the tests wont produce meaningful results.
 
 I didn't include the dump in the repo because it is around 1.0G in size.
 The used PCAP file (**maccdc2012_00000.pcap**) is from the National CyberWatch Mid-Atlantic Collegiate Cyber Defense Competition (MACCDC),
