@@ -23,6 +23,8 @@ func BenchmarkReadPcap(b *testing.B) {
 	}
 	defer r.Close()
 
+	b.ReportAllocs()
+	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		_, _, err := r.ReadNextPacket()
 		if err == io.EOF {
@@ -46,7 +48,8 @@ func BenchmarkReadPcap0Intro(b *testing.B) {
 		panic(err)
 	}
 
-	// run the Fib function b.N times
+	b.ReportAllocs()
+	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		h, err := r.Next()
 		if err == io.EOF {
@@ -71,6 +74,8 @@ func BenchmarkReadPcapGoPacket(b *testing.B) {
 	}
 	defer h.Close()
 
+	b.ReportAllocs()
+	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		_, _, err := h.ZeroCopyReadPacketData()
 		if err == io.EOF {
@@ -94,6 +99,8 @@ func BenchmarkReadPcapNetboot(b *testing.B) {
 		panic(err)
 	}
 
+	b.ReportAllocs()
+	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		if !r.Next() {
 			break
@@ -110,6 +117,8 @@ func BenchmarkReadPcapMiekg(b *testing.B) {
 	}
 	defer h.Close()
 
+	b.ReportAllocs()
+	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		_, r := h.NextEx()
 		if r != 1 {
@@ -132,12 +141,14 @@ func BenchmarkReadPcapGopacketPcapGo(b *testing.B) {
 		panic(err)
 	}
 
+	b.ReportAllocs()
+	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		_, _, err := r.ReadPacketData()
-		if err != nil {
-			fmt.Println(err)
+		if err == io.EOF {
 			break
+		} else if err != nil {
+			panic(err)
 		}
 	}
-
 }

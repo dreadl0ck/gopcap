@@ -11,8 +11,9 @@ This package provides support for reading Packet Capture (PCAP) files efficientl
 and provides benchmarks against other packages offering the same functionality.
 
 **Update**: I just discovered the go implementation from gopacket https://github.com/google/gopacket/pcapgo,
-which is comparatively fast and has support for both reading and writing PCAP and PCAP-NG! Better use this library instead.
+which is comparatively fast and has support for both reading and writing PCAP + PCAP-NG and live capture in pure Go (awesome!).
 I've added the gopacket/pcapgo implementation to the benchmarks as well.
+I recommend to use the pcapgo library instead of this one.
 
 However, in my benchmarks **this implementation still is slightly faster**.
 So, if performance is crucial and you only need to read PCAP, this lib might still be interesting.
@@ -113,7 +114,7 @@ These implementation are included in the benchmarks, in the order they are liste
 - https://github.com/google/gopacket/pcap
 - https://godoc.org/go.universe.tf/netboot
 - https://github.com/github.com/miekg/pcap
-- https://github.com/google/gopacket/pcapgo
+- https://github.com/google/gopacket/tree/master/pcapgo
 
 The benchmark code fetches a single packet in a loop, and discards all data that is not needed.
 Make sure the PCAP file for the test is big enough, otherwise the tests wont produce meaningful results.
@@ -128,41 +129,41 @@ Here are the results of a few runs on my development machine (MacBook Pro 2018, 
     goos: darwin
     goarch: amd64
     pkg: github.com/dreadl0ck/gopcap
-    BenchmarkReadPcap-12                  	10000000	       184 ns/op
-    BenchmarkReadPcap0Intro-12            	  300000	      5284 ns/op
-    BenchmarkReadPcapGoPacket-12          	 5000000	       513 ns/op
-    BenchmarkReadPcapNetboot-12           	 2000000	       819 ns/op
-    BenchmarkReadPcapMiekg-12             	 2000000	       857 ns/op
-    BenchmarkReadPcapGopacketPcapGo-12    	 5000000	       282 ns/op
+    BenchmarkReadPcap-12                  	10000000	       142 ns/op	     111 B/op	       1 allocs/op
+    BenchmarkReadPcap0Intro-12            	  300000	      4714 ns/op	     203 B/op	       8 allocs/op
+    BenchmarkReadPcapGoPacket-12          	 5000000	       258 ns/op	       0 B/op	       0 allocs/op
+    BenchmarkReadPcapNetboot-12           	 3000000	       510 ns/op	     235 B/op	       8 allocs/op
+    BenchmarkReadPcapMiekg-12             	 3000000	       582 ns/op	     283 B/op	       6 allocs/op
+    BenchmarkReadPcapGopacketPcapGo-12    	10000000	       149 ns/op	      98 B/op	       0 allocs/op
     PASS
-    ok  	github.com/dreadl0ck/gopcap	13.138s
-
+    ok  	github.com/dreadl0ck/gopcap	10.555s
+    
     $ go test -bench=.
     goos: darwin
     goarch: amd64
     pkg: github.com/dreadl0ck/gopcap
-    BenchmarkReadPcap-12                  	10000000	       145 ns/op
-    BenchmarkReadPcap0Intro-12            	  300000	      4211 ns/op
-    BenchmarkReadPcapGoPacket-12          	 5000000	       292 ns/op
-    BenchmarkReadPcapNetboot-12           	 3000000	       868 ns/op
-    BenchmarkReadPcapMiekg-12             	 2000000	       900 ns/op
-    BenchmarkReadPcapGopacketPcapGo-12      10000000	       252 ns/op
+    BenchmarkReadPcap-12                  	10000000	       193 ns/op	     111 B/op	       1 allocs/op
+    BenchmarkReadPcap0Intro-12            	  200000	      6181 ns/op	     224 B/op	       8 allocs/op
+    BenchmarkReadPcapGoPacket-12          	 5000000	       356 ns/op	       0 B/op	       0 allocs/op
+    BenchmarkReadPcapNetboot-12           	 2000000	       653 ns/op	     223 B/op	       8 allocs/op
+    BenchmarkReadPcapMiekg-12             	 2000000	       737 ns/op	     271 B/op	       6 allocs/op
+    BenchmarkReadPcapGopacketPcapGo-12    	10000000	       200 ns/op	      98 B/op	       0 allocs/op
     PASS
-    ok  	github.com/dreadl0ck/gopcap	13.255s
-
+    ok  	github.com/dreadl0ck/gopcap	11.911s
+    
     $ go test -bench=.
     goos: darwin
     goarch: amd64
     pkg: github.com/dreadl0ck/gopcap
-    BenchmarkReadPcap-12                    10000000	       186 ns/op
-    BenchmarkReadPcap0Intro-12            	  300000	      5281 ns/op
-    BenchmarkReadPcapGoPacket-12          	 3000000	       440 ns/op
-    BenchmarkReadPcapNetboot-12           	 2000000	       801 ns/op
-    BenchmarkReadPcapMiekg-12             	 2000000	       801 ns/op
-    BenchmarkReadPcapGopacketPcapGo-12    	 5000000	       299 ns/op
+    BenchmarkReadPcap-12                  	10000000	       145 ns/op	     111 B/op	       1 allocs/op
+    BenchmarkReadPcap0Intro-12            	  300000	      4800 ns/op	     203 B/op	       8 allocs/op
+    BenchmarkReadPcapGoPacket-12          	 5000000	       262 ns/op	       0 B/op	       0 allocs/op
+    BenchmarkReadPcapNetboot-12           	 3000000	       664 ns/op	     235 B/op	       8 allocs/op
+    BenchmarkReadPcapMiekg-12             	 2000000	       732 ns/op	     271 B/op	       6 allocs/op
+    BenchmarkReadPcapGopacketPcapGo-12    	10000000	       197 ns/op	      98 B/op	       0 allocs/op
     PASS
-    ok  	github.com/dreadl0ck/gopcap	12.524s
+    ok  	github.com/dreadl0ck/gopcap	11.557s
 
-It seems this implementation is the fastest of all compared.
+It can be seen that results vary, but this implementation is slightly faster than gopacket/pcapgo.
 The gopacket pcap library and fork from miekg both use C bindings.
 For the benchmark of the gopacket pcap implementation, the **ZeroCopyReadPacketData()** function was used.
