@@ -37,9 +37,11 @@ type Reader struct {
 // Open pcap file
 func Open(filename string) (*Reader, error) {
 
-	r := &Reader{}
+	var (
+		r   = &Reader{}
+		err error
+	)
 
-	var err error
 	r.FileHandle, err = os.Open(filename)
 	if err != nil {
 		return nil, err
@@ -64,7 +66,7 @@ func Open(filename string) (*Reader, error) {
 	return r, nil
 }
 
-// ReadNextPacket read next packet. returns header,data,error
+// ReadNextPacket reads the next packet. returns header,data,error
 func (r *Reader) ReadNextPacket() (PacketHeader, []byte, error) {
 
 	var buff [16]byte

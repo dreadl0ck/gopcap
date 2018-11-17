@@ -30,12 +30,28 @@ and therefore is much faster.
 The following API is exported by the package:
 
 ```golang
+// Count all packet inside the PCAP file at path
 func Count(path string) int64
+```
+```golang
+// Reader for PCAP
 type Reader
-    func Open(filename string) (*Reader, error)
-    func (r *Reader) Close() error
-    func (r *Reader) ReadNextPacket() (PacketHeader, []byte, error)
-    func (r *Reader) ReadNextPacketHeader() (PacketHeader, []byte, error)
+```
+```golang
+// Open file at path and return reader and error
+func Open(filename string) (*Reader, error)
+```
+```golang
+// Close reader
+func (r *Reader) Close() error
+```
+```golang
+// ReadNextPacket reads the next packet and returns header,data,error
+func (r *Reader) ReadNextPacket() (PacketHeader, []byte, error)
+```
+```golang
+// ReadNextPacketHeader reads the next packet header and returns header,data,error
+func (r *Reader) ReadNextPacketHeader() (PacketHeader, []byte, error)
 ```
 
 Data structures for the PCAP file header and packet headers are provided:
@@ -124,7 +140,7 @@ I didn't include the dump in the repo because it is around 1.0G in size.
 The used PCAP file (**maccdc2012_00000.pcap**) is from the National CyberWatch Mid-Atlantic Collegiate Cyber Defense Competition (MACCDC),
 which can be downloaded here: https://www.netresec.com/?page=MACCDC
 
-Here are the results of a few runs on my development machine (MacBook Pro 2018, 32GB RAM, 2,9 GHz Intel Core i9)
+Here are the results of a few runs on my development machine (MacBook Pro 2018, 32GB RAM, 2,9 GHz Intel Core i9):
 
     $ go test -bench=.
     goos: darwin
@@ -165,6 +181,35 @@ Here are the results of a few runs on my development machine (MacBook Pro 2018, 
     PASS
     ok  	github.com/dreadl0ck/gopcap	11.557s
 
-It can be seen that results vary, but this implementation is slightly faster than gopacket/pcapgo.
+    $ go test -bench=.
+    goos: darwin
+    goarch: amd64
+    pkg: github.com/dreadl0ck/gopcap
+    BenchmarkReadPcap-12                  	10000000	       172 ns/op	     125 B/op	       2 allocs/op
+    BenchmarkReadPcap0Intro-12            	  300000	      4175 ns/op	     203 B/op	       8 allocs/op
+    BenchmarkReadPcapGoPacket-12          	 5000000	       275 ns/op	       0 B/op	       0 allocs/op
+    BenchmarkReadPcapNetboot-12           	 3000000	       659 ns/op	     235 B/op	       8 allocs/op
+    BenchmarkReadPcapMiekg-12             	 2000000	       560 ns/op	     271 B/op	       6 allocs/op
+    BenchmarkReadPcapGopacketPcapGo-12    	10000000	       194 ns/op	      98 B/op	       0 allocs/op
+    PASS
+    ok  	github.com/dreadl0ck/gopcap	11.370s
+
+    $ go test -bench=.
+    goos: darwin
+    goarch: amd64
+    pkg: github.com/dreadl0ck/gopcap
+    BenchmarkReadPcap-12                  	10000000	       196 ns/op	     111 B/op	       1 allocs/op
+    BenchmarkReadPcap0Intro-12            	  300000	      4821 ns/op	     203 B/op	       8 allocs/op
+    BenchmarkReadPcapGoPacket-12          	 3000000	       436 ns/op	       0 B/op	       0 allocs/op
+    BenchmarkReadPcapNetboot-12           	 2000000	       766 ns/op	     223 B/op	       8 allocs/op
+    BenchmarkReadPcapMiekg-12             	 2000000	       855 ns/op	     271 B/op	       6 allocs/op
+    BenchmarkReadPcapGopacketPcapGo-12    	 5000000	       278 ns/op	     104 B/op	       1 allocs/op
+    PASS
+    ok  	github.com/dreadl0ck/gopcap	11.904s
+
+Results vary, but this implementation appears to be **slightly faster** than gopacket/pcapgo.
+**Can anyone explain why the amount of allocations varies in between different runs?
+How can 0 allocs/op happen?**
+
 The gopacket pcap library and fork from miekg both use C bindings.
 For the benchmark of the gopacket pcap implementation, the **ZeroCopyReadPacketData()** function was used.
