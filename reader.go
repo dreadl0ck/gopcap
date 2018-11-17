@@ -87,7 +87,7 @@ func (r *Reader) ReadNextPacket() (PacketHeader, []byte, error) {
 		panic("invalid capture length")
 	} else {
 		buf = make([]byte, pcaprecHdr.CaptureLen)
-		if _, err := io.ReadFull(r.Buffer, buf[:]); err != nil {
+		if _, err := io.ReadFull(r.Buffer, buf); err != nil {
 			return pcaprecHdr, buf, err
 		}
 	}
@@ -112,7 +112,7 @@ func (r *Reader) ReadNextPacketHeader() (PacketHeader, []byte, error) {
 	}
 
 	var buf = make([]byte, pcaprecHdr.CaptureLen)
-	if _, err := io.ReadFull(r.Buffer, buf[:]); err != nil {
+	if _, err := io.ReadFull(r.Buffer, buf); err != nil {
 		return pcaprecHdr, buf, err
 	}
 

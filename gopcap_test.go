@@ -8,6 +8,7 @@ import (
 
 	gopcap "github.com/0intro/pcap"
 	"github.com/google/gopacket/pcap"
+	"github.com/google/gopacket/pcapgo"
 	mpcap "github.com/miekg/pcap"
 	npcap "go.universe.tf/netboot/pcap"
 )
@@ -25,7 +26,6 @@ func BenchmarkReadPcap(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		_, _, err := r.ReadNextPacket()
 		if err == io.EOF {
-			fmt.Println("EOF")
 			break
 		} else if err != nil {
 			panic(err)
@@ -50,7 +50,6 @@ func BenchmarkReadPcap0Intro(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		h, err := r.Next()
 		if err == io.EOF {
-			fmt.Println("EOF")
 			break
 		} else if err != nil {
 			panic(err)
@@ -75,7 +74,6 @@ func BenchmarkReadPcapGoPacket(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		_, _, err := h.ZeroCopyReadPacketData()
 		if err == io.EOF {
-			fmt.Println("EOF")
 			break
 		} else if err != nil {
 			panic(err)
@@ -98,7 +96,6 @@ func BenchmarkReadPcapNetboot(b *testing.B) {
 
 	for n := 0; n < b.N; n++ {
 		if !r.Next() {
-			fmt.Println("EOF")
 			break
 		}
 		_ = r.Packet()
@@ -120,4 +117,27 @@ func BenchmarkReadPcapMiekg(b *testing.B) {
 			break
 		}
 	}
+}
+
+func BenchmarkReadPcapGopacketPcapGo(b *testing.B) {
+
+	f, err := os.Open(file)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	r, err := pcapgo.NewReader(f)
+	if err != nil {
+		panic(err)
+	}
+
+	for n := 0; n < b.N; n++ {
+		_, _, err := r.ReadPacketData()
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+	}
+
 }
