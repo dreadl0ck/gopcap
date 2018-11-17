@@ -6,14 +6,15 @@
 ![Linux](https://img.shields.io/badge/Supports-Linux-green.svg)
 ![macOS](https://img.shields.io/badge/Supports-macOS-green.svg)
 ![Windows](https://img.shields.io/badge/Supports-Windows-green.svg)
+[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg)](https://godoc.org/github.com/dreadl0ck/gopcap)
 
 This package provides support for reading Packet Capture (PCAP) files efficiently in pure Go
 and provides benchmarks against other packages offering the same functionality.
 
-**Update**: I just discovered the go implementation from gopacket https://github.com/google/gopacket/pcapgo,
+**Update**: I just discovered the go implementation from gopacket https://github.com/google/gopacket/tree/master/pcapgo,
 which is comparatively fast and has support for both reading and writing PCAP + PCAP-NG and live capture in pure Go (awesome!).
 I've added the gopacket/pcapgo implementation to the benchmarks as well.
-I recommend to use the pcapgo library instead of this one.
+I recommend to use the pcapgo library instead of this one, it offers far more functionality.
 
 However, in my benchmarks **this implementation still is slightly faster**.
 So, if performance is crucial and you only need to read PCAP, this lib might still be interesting.
