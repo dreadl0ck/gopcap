@@ -21,15 +21,14 @@ import "io"
 
 // Count packets in file
 // TODO: dont actually read anything... just seek to next offset
-func Count(path string) int64 {
+func Count(path string) (int64, error) {
 
 	var (
 		numPackets int64
 		r, err     = Open(path)
 	)
 	if err != nil {
-		println("failed to open file")
-		panic(err)
+		return numPackets, err
 	}
 
 	for {
@@ -38,7 +37,7 @@ func Count(path string) int64 {
 			if err == io.EOF {
 				break
 			} else {
-				panic(err)
+				return numPackets, err
 			}
 		}
 		numPackets++
@@ -46,8 +45,7 @@ func Count(path string) int64 {
 
 	err = r.Close()
 	if err != nil {
-		println("failed to close file")
-		panic(err)
+		return numPackets, err
 	}
 
 	return numPackets
