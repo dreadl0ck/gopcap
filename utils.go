@@ -48,5 +48,5 @@ func Count(path string) (int64, error) {
 		return numPackets, err
 	}
 
-	return numPackets
+	return numPackets, nil
 }
