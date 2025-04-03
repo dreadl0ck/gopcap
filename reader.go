@@ -11,16 +11,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+
 package gopcap
 
 import (
-	"bufio"
-	"encoding/binary"
-	"fmt"
-	"io"
-	"os"
+    "bufio"
+    "encoding/binary"
+    "fmt"
+    "io"
+    "os"
 
-	"github.com/davecgh/go-spew/spew"
+    //"github.com/davecgh/go-spew/spew"
 )
 
 /////////////////////////////
@@ -29,99 +30,103 @@ import (
 
 // Reader struct
 type Reader struct {
-	FileHandle *os.File
-	Buffer     *bufio.Reader
-	Header     FileHeader
+    FileHandle *os.File
+    Buffer     *bufio.Reader
+    Header     FileHeader
 }
 
 // Open pcap file
 func Open(filename string) (*Reader, error) {
 
-	var (
-		r   = &Reader{}
-		err error
-	)
+    var (
+        r   = &Reader{}
+        err error
+    )
 
-	r.FileHandle, err = os.Open(filename)
-	if err != nil {
-		return nil, err
-	}
+    r.FileHandle, err = os.Open(filename)
+    if err != nil {
+        return nil, err
+    }
 
-	var buff [24]byte
-	if _, err := io.ReadFull(r.FileHandle, buff[:]); err != nil {
-		return nil, err
-	}
+    var buff [24]byte
+    if _, err := io.ReadFull(r.FileHandle, buff[:]); err != nil {
+        return nil, err
+    }
 
-	r.Header = FileHeader{
-		MagicNumber:  binary.LittleEndian.Uint32(buff[:4]),
-		VersionMajor: binary.LittleEndian.Uint16(buff[4:6]),
-		VersionMinor: binary.LittleEndian.Uint16(buff[6:8]),
-		Thiszone:     int32(binary.LittleEndian.Uint32(buff[8:12])),
-		Sigfigs:      binary.LittleEndian.Uint32(buff[12:16]),
-		Snaplen:      binary.LittleEndian.Uint32(buff[16:20]),
-		Network:      binary.LittleEndian.Uint32(buff[20:24]),
-	}
+    r.Header = FileHeader{
+        MagicNumber:  binary.LittleEndian.Uint32(buff[:4]),
+        VersionMajor: binary.LittleEndian.Uint16(buff[4:6]),
+        VersionMinor: binary.LittleEndian.Uint16(buff[6:8]),
+        Thiszone:     int32(binary.LittleEndian.Uint32(buff[8:12])),
+        Sigfigs:      binary.LittleEndian.Uint32(buff[12:16]),
+        Snaplen:      binary.LittleEndian.Uint32(buff[16:20]),
+        Network:      binary.LittleEndian.Uint32(buff[20:24]),
+    }
 
-	r.Buffer = bufio.NewReader(r.FileHandle)
-	return r, nil
+    r.Buffer = bufio.NewReader(r.FileHandle)
+    return r, nil
 }
 
 // ReadNextPacket reads the next packet. returns header,data,error
 func (r *Reader) ReadNextPacket() (PacketHeader, []byte, error) {
 
-	var buff [16]byte
-	if _, err := io.ReadFull(r.Buffer, buff[:]); err != nil {
-		return PacketHeader{}, nil, err
-	}
+    var buff [16]byte
+    if _, err := io.ReadFull(r.Buffer, buff[:]); err != nil {
+        return PacketHeader{}, nil, err
+    }
 
-	pcaprecHdr := PacketHeader{
-		TsSec:       int32(binary.LittleEndian.Uint32(buff[0:4])),
-		TsUsec:      int32(binary.LittleEndian.Uint32(buff[4:8])),
-		CaptureLen:  int32(binary.LittleEndian.Uint32(buff[8:12])),
-		OriginalLen: int32(binary.LittleEndian.Uint32(buff[12:16])),
-	}
+    pcaprecHdr := PacketHeader{
+        TsSec:       int32(binary.LittleEndian.Uint32(buff[0:4])),
+        TsUsec:      int32(binary.LittleEndian.Uint32(buff[4:8])),
+        CaptureLen:  int32(binary.LittleEndian.Uint32(buff[8:12])),
+        OriginalLen: int32(binary.LittleEndian.Uint32(buff[12:16])),
+    }
 
-	var buf []byte
-	if pcaprecHdr.CaptureLen < 1 {
-		fmt.Println("invalid pcaprecHdr.CaptureLen:", pcaprecHdr.CaptureLen)
-		spew.Dump(pcaprecHdr)
-		spew.Dump(buff)
-		panic("invalid capture length")
-	} else {
-		buf = make([]byte, pcaprecHdr.CaptureLen)
-		if _, err := io.ReadFull(r.Buffer, buf); err != nil {
-			return pcaprecHdr, buf, err
-		}
-	}
+    var buf []byte
+    if pcaprecHdr.CaptureLen < 1 {
+        fmt.Println("invalid pcaprecHdr.CaptureLen:", pcaprecHdr.CaptureLen)
+        //spew.Dump(pcaprecHdr)
+        //spew.Dump(buff)
+        //panic("invalid capture length")
+        return pcaprecHdr, nil, io.EOF
+    } else if pcaprecHdr.CaptureLen > 262144 {
+        fmt.Println("pcaprecHdr.CaptureLen has %d-byte packet, bigger than  maximum of 262144", pcaprecHdr.CaptureLen)
+        return pcaprecHdr, nil, io.EOF
+    } else {
+        buf = make([]byte, pcaprecHdr.CaptureLen)
+        if _, err := io.ReadFull(r.Buffer, buf); err != nil {
+            return pcaprecHdr, buf, err
+        }
+    }
 
-	return pcaprecHdr, buf, nil
+    return pcaprecHdr, buf, nil
 }
 
 // ReadNextPacketHeader read next packet header. returns header,data,error
 // @TODO: add a bytes.Reader after the buffered reader, and seek inside that buffer instead of reading all the bytes.
 func (r *Reader) ReadNextPacketHeader() (PacketHeader, []byte, error) {
 
-	var buff [16]byte
-	if _, err := io.ReadFull(r.Buffer, buff[:]); err != nil {
-		return PacketHeader{}, nil, err
-	}
+    var buff [16]byte
+    if _, err := io.ReadFull(r.Buffer, buff[:]); err != nil {
+        return PacketHeader{}, nil, err
+    }
 
-	pcaprecHdr := PacketHeader{
-		TsSec:       int32(binary.LittleEndian.Uint32(buff[0:4])),
-		TsUsec:      int32(binary.LittleEndian.Uint32(buff[4:8])),
-		CaptureLen:  int32(binary.LittleEndian.Uint32(buff[8:12])),
-		OriginalLen: int32(binary.LittleEndian.Uint32(buff[12:16])),
-	}
+    pcaprecHdr := PacketHeader{
+        TsSec:       int32(binary.LittleEndian.Uint32(buff[0:4])),
+        TsUsec:      int32(binary.LittleEndian.Uint32(buff[4:8])),
+        CaptureLen:  int32(binary.LittleEndian.Uint32(buff[8:12])),
+        OriginalLen: int32(binary.LittleEndian.Uint32(buff[12:16])),
+    }
 
-	var buf = make([]byte, pcaprecHdr.CaptureLen)
-	if _, err := io.ReadFull(r.Buffer, buf); err != nil {
-		return pcaprecHdr, buf, err
-	}
+    var buf = make([]byte, pcaprecHdr.CaptureLen)
+    if _, err := io.ReadFull(r.Buffer, buf); err != nil {
+        return pcaprecHdr, buf, err
+    }
 
-	return pcaprecHdr, buf, nil
+    return pcaprecHdr, buf, nil
 }
 
 // Close pcap file
 func (r *Reader) Close() error {
-	return r.FileHandle.Close()
+    return r.FileHandle.Close()
 }
